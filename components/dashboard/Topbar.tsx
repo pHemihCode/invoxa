@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Bell } from "lucide-react"
+import { Bell, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,17 +8,18 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { createClient } from "@/utils/supabase/client"
-import { useRouter, usePathname } from "next/navigation"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter, usePathname } from "next/navigation";
+import { useState } from "react";
 
 interface TopbarProps {
   user: {
-    email: string
-    name?: string | null
-    photo_url?: string | null
-  }
+    email: string;
+    name?: string | null;
+    photo_url?: string | null;
+  };
 }
 
 function getInitials(name?: string | null, email?: string) {
@@ -28,29 +29,31 @@ function getInitials(name?: string | null, email?: string) {
       .map((n) => n[0])
       .join("")
       .toUpperCase()
-      .slice(0, 2)
+      .slice(0, 2);
   }
-  return email?.[0]?.toUpperCase() ?? "U"
+  return email?.[0]?.toUpperCase() ?? "U";
 }
 
 function getPageTitle(pathname: string) {
-  if (pathname === "/dashboard") return "Overview"
-  if (pathname.startsWith("/dashboard/invoices/new")) return "New Invoice"
-  if (pathname.startsWith("/dashboard/invoices")) return "Invoices"
-  if (pathname.startsWith("/dashboard/profile")) return "Profile"
-  return "Dashboard"
+  if (pathname === "/dashboard") return "Overview";
+  if (pathname.startsWith("/dashboard/invoices/new")) return "New Invoice";
+  if (pathname.startsWith("/dashboard/invoices")) return "Invoices";
+  if (pathname.startsWith("/dashboard/profile")) return "Profile";
+  return "Dashboard";
 }
 
 export function Topbar({ user }: TopbarProps) {
-  const router = useRouter()
-  const supabase = createClient()
+  const router = useRouter();
+  const supabase = createClient();
+  const [signingOut, setSigningOut] = useState(false);
 
   // Get pathname client-side
-  const pathname = usePathname()
+  const pathname = usePathname();
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push("/login")
-  }
+    setSigningOut(true);
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
 
   return (
     <header className="sticky top-0 z-20 flex items-center justify-between h-16 px-6 bg-[#F7F6F3] border-b border-stone-200">
@@ -87,28 +90,36 @@ export function Topbar({ user }: TopbarProps) {
                   <span className="text-sm font-medium text-stone-900">
                     {user.name}
                   </span>
-                ):"Freelancer"}
+                ) : (
+                  "Freelancer"
+                )}
                 <span className="text-xs text-stone-500 truncate">
                   {user.email}
                 </span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => router.push("/dashboard/profile")}
-            >
+            <DropdownMenuItem onClick={() => router.push("/dashboard/profile")}>
               Profile settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleSignOut}
+              disabled={signingOut}
               className="text-red-600 focus:text-red-600"
             >
-              Sign out
+              {signingOut ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                  Signing out...
+                </>
+              ) : (
+                "Sign out"
+              )}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
     </header>
-  )
+  );
 }

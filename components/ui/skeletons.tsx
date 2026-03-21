@@ -14,16 +14,7 @@ function Skeleton({ className }: { className?: string }) {
 export function DashboardSkeleton() {
   return (
     <div className="space-y-8 pb-20 lg:pb-0">
-      {/* Greeting skeleton */}
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-64" />
-        </div>
-        <Skeleton className="h-9 w-32 hidden sm:block" />
-      </div>
-
-      {/* Stats grid skeleton */}
+      {/* Stats grid skeleton only */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="bg-white rounded-2xl border border-stone-200 p-4 space-y-3">
@@ -64,19 +55,13 @@ export function DashboardSkeleton() {
 export function InvoicesSkeleton() {
   return (
     <div className="space-y-5 pb-24 lg:pb-0">
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-32" />
-          <Skeleton className="h-4 w-48" />
-        </div>
-        <Skeleton className="h-9 w-9 sm:w-32" />
-      </div>
-
+      {/* Search + filter row */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <Skeleton className="h-10 flex-1" />
-        <Skeleton className="h-10 w-52" />
+        <Skeleton className="h-10 flex-1 min-w-0" />
+        <Skeleton className="h-10 w-52 shrink-0" />
       </div>
 
+      {/* Invoice cards */}
       <div className="space-y-2">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="bg-white rounded-2xl border border-stone-200 p-4 flex items-center gap-3">
@@ -85,7 +70,7 @@ export function InvoicesSkeleton() {
               <Skeleton className="h-4 w-36" />
               <Skeleton className="h-3 w-52" />
             </div>
-            <Skeleton className="h-5 w-16" />
+            <Skeleton className="h-5 w-16 shrink-0" />
           </div>
         ))}
       </div>
@@ -96,11 +81,6 @@ export function InvoicesSkeleton() {
 export function ProfileSkeleton() {
   return (
     <div className="max-w-2xl space-y-5 pb-24 lg:pb-0">
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-24" />
-        <Skeleton className="h-4 w-64" />
-      </div>
-
       <div className="bg-white rounded-2xl border border-stone-200 p-6 space-y-5">
         <Skeleton className="h-4 w-20" />
         <div className="flex items-center gap-5">
@@ -122,7 +102,6 @@ export function ProfileSkeleton() {
           </div>
         </div>
       </div>
-
       <Skeleton className="h-10 w-full rounded-2xl" />
     </div>
   )

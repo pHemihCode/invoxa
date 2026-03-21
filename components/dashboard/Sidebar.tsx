@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   FileText,
@@ -10,44 +10,54 @@ import {
   User,
   LogOut,
   Zap,
-} from "lucide-react"
-import { createClient } from "@/utils/supabase/client"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { useEffect, useState } from "react"
+  Loader2,
+} from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
-const supabase = createClient()
+const supabase = createClient();
 
 export function Sidebar() {
-  const pathname = usePathname()
-  const router = useRouter()
-  const [invoiceCount, setInvoiceCount] = useState<number | null>(null)
+  const pathname = usePathname();
+  const [signingOut, setSigningOut] = useState(false);
+  const router = useRouter();
+  const [invoiceCount, setInvoiceCount] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchCount = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
 
       const { count } = await supabase
         .from("invoices")
         .select("*", { count: "exact", head: true })
-        .eq("freelancer_id", user.id)
+        .eq("freelancer_id", user.id);
 
-      setInvoiceCount(count ?? 0)
-    }
-    fetchCount()
-  }, [])
+      setInvoiceCount(count ?? 0);
+    };
+    fetchCount();
+  }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push("/login")
-  }
+    setSigningOut(true);
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
 
   const navItems = [
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { label: "Invoices", href: "/dashboard/invoices", icon: FileText, count: invoiceCount },
+    {
+      label: "Invoices",
+      href: "/dashboard/invoices",
+      icon: FileText,
+      count: invoiceCount,
+    },
     { label: "Profile", href: "/dashboard/profile", icon: User },
-  ]
+  ];
 
   return (
     <>
@@ -82,7 +92,7 @@ export function Sidebar() {
             const isActive =
               item.href === "/dashboard"
                 ? pathname === "/dashboard"
-                : pathname.startsWith(item.href)
+                : pathname.startsWith(item.href);
 
             return (
               <Link
@@ -92,10 +102,15 @@ export function Sidebar() {
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                   isActive
                     ? "bg-stone-100 text-stone-900"
-                    : "text-stone-500 hover:text-stone-900 hover:bg-stone-50"
+                    : "text-stone-500 hover:text-stone-900 hover:bg-stone-50",
                 )}
               >
-                <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-stone-900" : "text-stone-400")} />
+                <item.icon
+                  className={cn(
+                    "w-4 h-4 shrink-0",
+                    isActive ? "text-stone-900" : "text-stone-400",
+                  )}
+                />
                 {item.label}
                 {/* Live invoice count */}
                 {"count" in item && item.count !== null && (
@@ -104,7 +119,7 @@ export function Sidebar() {
                   </span>
                 )}
               </Link>
-            )
+            );
           })}
         </nav>
 
@@ -114,8 +129,12 @@ export function Sidebar() {
             onClick={handleSignOut}
             className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-stone-500 hover:text-stone-900 hover:bg-stone-50 transition-all duration-150"
           >
-            <LogOut className="w-4 h-4 text-stone-400" />
-            Sign out
+            {signingOut ? (
+              <Loader2 className="w-4 h-4 text-stone-400 animate-spin" />
+            ) : (
+              <LogOut className="w-4 h-4 text-stone-400" />
+            )}
+            {signingOut ? "Signing out..." : "Sign out"}
           </button>
         </div>
       </aside>
@@ -126,7 +145,7 @@ export function Sidebar() {
           const isActive =
             item.href === "/dashboard"
               ? pathname === "/dashboard"
-              : pathname.startsWith(item.href)
+              : pathname.startsWith(item.href);
 
           return (
             <Link
@@ -134,13 +153,13 @@ export function Sidebar() {
               href={item.href}
               className={cn(
                 "flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-[11px] font-medium transition-colors",
-                isActive ? "text-stone-900" : "text-stone-400"
+                isActive ? "text-stone-900" : "text-stone-400",
               )}
             >
               <item.icon className="w-5 h-5" />
               {item.label}
             </Link>
-          )
+          );
         })}
         <Link
           href="/dashboard/invoices/new"
@@ -153,5 +172,5 @@ export function Sidebar() {
         </Link>
       </nav>
     </>
-  )
+  );
 }

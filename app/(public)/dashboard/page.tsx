@@ -68,9 +68,12 @@ export default async function DashboardPage() {
     },
   ]
 
-  const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.full_name
+  const firstName =
+  profile?.name?.split(" ")[0] ||
+  (user?.user_metadata?.full_name as string)?.split(" ")[0] ||
+  user?.email?.split("@")[0] || "there"
   {(!invoices || invoices.length === 0) && <EmptyOverview />}
-  
+
   return (
     <div className="space-y-8 pb-20 lg:pb-0">
       {/* Greeting */}
