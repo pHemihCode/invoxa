@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server"
 import { FileText, DollarSign, Clock, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { EmptyOverview } from "@/components/ui/empty-states"
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-NG", {
@@ -68,7 +69,8 @@ export default async function DashboardPage() {
   ]
 
   const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.full_name
-
+  {(!invoices || invoices.length === 0) && <EmptyOverview />}
+  
   return (
     <div className="space-y-8 pb-20 lg:pb-0">
       {/* Greeting */}

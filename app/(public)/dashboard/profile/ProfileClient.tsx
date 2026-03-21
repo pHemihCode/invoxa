@@ -17,6 +17,7 @@ import {
   ChevronUp,
 } from "lucide-react"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 interface ProfileData {
   name: string
@@ -47,6 +48,7 @@ export function ProfileClient({ userId, initialProfile }: ProfileClientProps) {
   const [showLinks, setShowLinks] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [saved, setSaved] = useState(false)
+  const router = useRouter()
 
   const [profile, setProfile] = useState<ProfileData>(initialProfile)
   const [preview, setPreview] = useState<string>(initialProfile.photo_url)
@@ -117,6 +119,7 @@ export function ProfileClient({ userId, initialProfile }: ProfileClientProps) {
         description: "Your payment page has been updated.",
       })
       setTimeout(() => setSaved(false), 3000)
+      router.refresh()
     })
   }
 

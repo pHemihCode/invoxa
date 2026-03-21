@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
+import { EmptyInvoices, EmptySearchResults } from "@/components/ui/empty-states"
 import {
   Plus,
   Search,
@@ -112,6 +113,9 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
     { key: "paid", label: "Paid" },
   ]
 
+{filtered.length === 0 && (
+  search ? <EmptySearchResults query={search} /> : <EmptyInvoices />
+)}
   return (
     <div className="space-y-5 pb-24 lg:pb-0">
 
@@ -151,7 +155,7 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
         </div>
 
         {/* Filter tabs */}
-        <div className="flex items-center bg-white border border-stone-200 rounded-xl p-1 gap-0.5 shrink-0">
+        <div className="flex items-center bg-white border border-stone-200 rounded-xl p-1 gap-0.5 shrink-0 w-fit">
           {tabs.map((tab) => (
             <button
               key={tab.key}
