@@ -103,17 +103,6 @@ export default async function PaymentSuccessPage({ params }: Props) {
           </p>
         </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes fade-up {
-          from { opacity: 0; transform: translateY(14px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pop-in {
-          from { opacity: 0; transform: scale(0.6); }
-          to { opacity: 1; transform: scale(1); }
-        }
-      `}</style>
     </div>
   )
 }
