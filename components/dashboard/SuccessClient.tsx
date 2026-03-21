@@ -76,7 +76,7 @@ export function SuccessClient({ invoice }: SuccessClientProps) {
           >
             <CheckCircle className="w-10 h-10 text-emerald-500" strokeWidth={1.5} />
           </div>
-          <h2 className="text-2xl font-display font-bold text-stone-900 text-center">
+          <h2 className="text-2xl font-bold text-stone-900 text-center">
             Invoice Created!
           </h2>
           <p className="mt-2 text-sm text-stone-500 text-center leading-relaxed">

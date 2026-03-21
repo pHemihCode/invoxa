@@ -14,34 +14,40 @@ import {
 import { createClient } from "@/utils/supabase/client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
 
-const navItems = [
-  {
-    label: "Overview",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Invoices",
-    href: "/dashboard/invoices",
-    icon: FileText,
-  },
-  {
-    label: "Profile",
-    href: "/dashboard/profile",
-    icon: User,
-  },
-]
+const supabase = createClient()
 
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
+  const [invoiceCount, setInvoiceCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { count } = await supabase
+        .from("invoices")
+        .select("*", { count: "exact", head: true })
+        .eq("freelancer_id", user.id)
+
+      setInvoiceCount(count ?? 0)
+    }
+    fetchCount()
+  }, [])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push("/login")
   }
+
+  const navItems = [
+    { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+    { label: "Invoices", href: "/dashboard/invoices", icon: FileText, count: invoiceCount },
+    { label: "Profile", href: "/dashboard/profile", icon: User },
+  ]
 
   return (
     <>
@@ -89,16 +95,12 @@ export function Sidebar() {
                     : "text-stone-500 hover:text-stone-900 hover:bg-stone-50"
                 )}
               >
-                <item.icon
-                  className={cn(
-                    "w-4 h-4 shrink-0",
-                    isActive ? "text-stone-900" : "text-stone-400"
-                  )}
-                />
+                <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-stone-900" : "text-stone-400")} />
                 {item.label}
-                {item.label === "Invoices" && (
+                {/* Live invoice count */}
+                {"count" in item && item.count !== null && (
                   <span className="ml-auto text-[11px] font-medium bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full">
-                    3
+                    {item.count}
                   </span>
                 )}
               </Link>

@@ -40,9 +40,9 @@ export default async function PaymentSuccessPage({ params }: Props) {
       <div className="bg-white border-b border-stone-200">
         <div className="max-w-120 mx-auto px-5 py-4 flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-stone-900 flex items-center justify-center">
-            <Zap className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+            <Zap className="w-5 h-5 text-white" strokeWidth={2.5} />
           </div>
-          <span className="text-sm font-semibold text-stone-900">Invoxa</span>
+          <span className="text-base font-semibold text-stone-900">Invoxa</span>
         </div>
       </div>
 
@@ -60,7 +60,7 @@ export default async function PaymentSuccessPage({ params }: Props) {
             <CheckCircle className="w-10 h-10 text-emerald-500" strokeWidth={1.5} />
           </div>
 
-          <h1 className="text-2xl font-display font-bold text-stone-900 mb-2">
+          <h1 className="text-2xl font-bold text-stone-900 mb-2">
             Payment Successful!
           </h1>
           <p className="text-sm text-stone-500 leading-relaxed mb-8">
