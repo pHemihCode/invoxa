@@ -126,7 +126,7 @@ export function ProfileClient({ userId, initialProfile }: ProfileClientProps) {
   const hasChanges = JSON.stringify(profile) !== JSON.stringify(initialProfile)
 
   return (
-    <div className="max-w-2xl space-y-5 pb-24 lg:pb-0">
+    <div className="max-w-2xl space-y-5">
 
       {/* Header */}
       <div>

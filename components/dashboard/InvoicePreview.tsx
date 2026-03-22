@@ -49,7 +49,7 @@ export function InvoicePreview({ values, profile }: InvoicePreviewProps) {
 
       {/* Phone frame */}
       <div className="flex-1 overflow-hidden">
-        <div className="relative mx-auto w-full max-w-[320px] rounded-[2rem] border-[6px] border-stone-800 bg-white shadow-2xl overflow-hidden" style={{ minHeight: 560 }}>
+        <div className="relative mx-auto w-full max-w-[320px] rounded-[2rem] border-[6px] border-stone-800 bg-white overflow-hidden" style={{ minHeight: 560 }}>
           {/* Notch */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-stone-800 rounded-b-xl z-10" />
 
