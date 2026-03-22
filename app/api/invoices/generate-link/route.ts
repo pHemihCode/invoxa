@@ -9,31 +9,61 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    // ── TODO: Replace this stub with real Raenest API call ──
-    const res = await fetch("https://api.paystack.co/transaction/initialize", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    email: client_email || "client@invoxa.app",
-    amount: amount * 100, // Paystack uses kobo
-    currency: currency,
-    reference: invoiceId,
-    callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/pay/${invoiceId}/success`,
-    metadata: {
-      invoice_id: invoiceId,
-      client_name: client_name,
-    },
-  }),
-})
+    const supabase = await createClient()
 
-const data = await res.json()
-const paymentLink = data.data.authorization_url
+    // Fetch the invoice to get the freelancer's ID
+    const { data: invoice } = await supabase
+      .from("invoices")
+      .select("freelancer_id")
+      .eq("id", invoiceId)
+      .single()
+
+    // Fetch the freelancer's subaccount code
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("subaccount_code")
+      .eq("id", invoice?.freelancer_id)
+      .single()
+
+    const origin = request.headers.get("origin") ||
+      process.env.NEXT_PUBLIC_APP_URL
+
+    const res = await fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: client_email || "client@invoxa.app",
+        amount: amount * 100,
+        reference: invoiceId,
+        callback_url: `${origin}/pay/${invoiceId}/success`,
+        metadata: {
+          invoice_id: invoiceId,
+          client_name,
+        },
+        // Use subaccount if freelancer has connected their bank
+        ...(profile?.subaccount_code && {
+          subaccount: profile.subaccount_code,
+          bearer: "subaccount",
+        }),
+      }),
+    })
+
+    const data = await res.json()
+    console.log("[generate-link] Paystack response:", data)
+
+    if (!res.ok || !data.data) {
+      return NextResponse.json(
+        { error: data.message || "Paystack error" },
+        { status: 400 }
+      )
+    }
+
+    const paymentLink = data.data.authorization_url
 
     // Save payment link to Supabase
-    const supabase = await createClient()
     const { error } = await supabase
       .from("invoices")
       .update({ payment_link: paymentLink })
@@ -42,6 +72,7 @@ const paymentLink = data.data.authorization_url
     if (error) throw error
 
     return NextResponse.json({ paymentLink })
+
   } catch (err) {
     console.error("[generate-link]", err)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

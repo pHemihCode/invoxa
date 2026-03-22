@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server"
 import { redirect } from "next/navigation"
 import { ProfileClient } from "./ProfileClient"
-
+import { BankDetailsForm } from "./BankDetailsForm"
 export default async function ProfilePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -10,12 +10,13 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("name, bio, photo_url, email, github, behance, linkedin, portfolio")
+    .select("name, bio, photo_url, email, github, behance, linkedin, portfolio, bank_name, account_number, account_name, subaccount_code")
     .eq("id", user.id)
     .single()
 
   return (
-    <ProfileClient
+    <div className="space-y-5">
+      <ProfileClient
       userId={user.id}
       initialProfile={{
         name: profile?.name ?? "",
@@ -28,5 +29,15 @@ export default async function ProfilePage() {
         portfolio: profile?.portfolio ?? "",
       }}
     />
+    <BankDetailsForm
+  profileName={profile?.name ?? ""}
+  initialData={{
+    bank_name: profile?.bank_name,
+    account_number: profile?.account_number,
+    account_name: profile?.account_name,
+    subaccount_code: profile?.subaccount_code,
+  }}
+/>
+    </div>
   )
 }

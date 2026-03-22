@@ -2,6 +2,14 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+   if (
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/pay') ||
+    pathname.startsWith('/auth')
+  ) {
+    return NextResponse.next()
+  }
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -44,5 +52,6 @@ export const config = {
    matcher: [
     '/dashboard/:path*',
     '/login',
+    '/((?!api|_next/static|_next/image|favicon.ico|pay|auth).*)'
   ],
 }
