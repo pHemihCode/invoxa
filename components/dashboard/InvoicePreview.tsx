@@ -41,14 +41,10 @@ export function InvoicePreview({ values, profile }: InvoicePreviewProps) {
   return (
     <div className="h-full flex flex-col">
       {/* Preview header */}
-      <div className="flex items-center justify-between mb-4 shrink-0">
+      <div className="flex items-center justify-center mb-4 shrink-0">
         <p className="text-xs font-medium text-stone-400 uppercase tracking-widest">
           Live Preview
         </p>
-        <span className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-medium">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          Updates live
-        </span>
       </div>
 
       {/* Phone frame */}

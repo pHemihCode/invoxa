@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useForm, useWatch } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { invoiceSchema, InvoiceFormValues } from "@/lib/invoice-schema"
-import { InvoicePreview } from "@/components/dashboard/InvoicePreview"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { invoiceSchema, InvoiceFormValues } from "@/lib/invoice-schema";
+import { InvoicePreview } from "@/components/dashboard/InvoicePreview";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -21,29 +21,41 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { cn } from "@/lib/utils"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/utils/supabase/client"
-import { Loader2, ChevronDown, ChevronUp, Eye } from "lucide-react"
-import { toast } from "sonner"
+} from "@/components/ui/form";
+import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
+import {
+  Loader2,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  AlertCircle,
+} from "lucide-react";
+import { toast } from "sonner";
+import Link from "next/link";
+
+const supabase = createClient();
 
 interface InvoiceBuilderFormProps {
-  userId: string
+  userId: string;
   profile: {
-    name?: string | null
-    photo_url?: string | null
-    bio?: string | null
-  }
+    name?: string | null;
+    photo_url?: string | null;
+    bio?: string | null;
+  };
 }
 
-export function InvoiceBuilderForm({ userId, profile }: InvoiceBuilderFormProps) {
-  const router = useRouter()
-  const supabase = createClient()
-  const [loading, setLoading] = useState(false)
-  const [showLinks, setShowLinks] = useState(false)
-  const [showPreview, setShowPreview] = useState(false)
+export function InvoiceBuilderForm({
+  userId,
+  profile,
+}: InvoiceBuilderFormProps) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [showLinks, setShowLinks] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [hasBankConnected, setHasBankConnected] = useState(false);
 
   const form = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceSchema),
@@ -61,15 +73,31 @@ export function InvoiceBuilderForm({ userId, profile }: InvoiceBuilderFormProps)
       note: "",
     },
     mode: "onChange",
-  })
+  });
+
+  useEffect(() => {
+    const check = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("subaccount_code")
+        .eq("id", user.id)
+        .single();
+      setHasBankConnected(!!data?.subaccount_code);
+    };
+    check();
+  }, []);
 
   // Watch all values for live preview
-  const watchedValues = useWatch({ control: form.control })
+  const watchedValues = useWatch({ control: form.control });
 
   const onSubmit = async (values: InvoiceFormValues) => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const amount = Number(values.amount.replace(/,/g, ""))
+      const amount = Number(values.amount.replace(/,/g, ""));
 
       const { data, error } = await supabase
         .from("invoices")
@@ -89,42 +117,65 @@ export function InvoiceBuilderForm({ userId, profile }: InvoiceBuilderFormProps)
           status: "unpaid",
         })
         .select("id")
-        .single()
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
       toast.success("Invoice created!", {
         description: "Now generating your payment link...",
-      })
+      });
 
       // Trigger Raenest payment link generation
       const res = await fetch("/api/invoices/generate-link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ invoiceId: data.id, amount, currency: values.currency, client_name: values.client_name,client_email: values.client_email }),
-      })
+        body: JSON.stringify({
+          invoiceId: data.id,
+          amount,
+          currency: values.currency,
+          client_name: values.client_name,
+          client_email: values.client_email,
+        }),
+      });
 
-      if (!res.ok) throw new Error("Failed to generate payment link")
+      if (!res.ok) throw new Error("Failed to generate payment link");
 
-      router.push(`/dashboard/invoices/${data.id}/success`)
+      router.push(`/dashboard/invoices/${data.id}/success`);
     } catch (err) {
-      console.error(err)
+      console.error(err);
       toast.error("Something went wrong", {
         description: "Please try again.",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-8rem)]">
-
       {/* ── Left: Form ── */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 space-x-4">
+        {!hasBankConnected && (
+          <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-3">
+            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-800">
+                Bank account not connected
+              </p>
+              <p className="text-xs text-amber-600 mt-0.5">
+                <Link
+                  href="/dashboard/profile"
+                  className="underline underline-offset-2"
+                >
+                  Add your bank details
+                </Link>{" "}
+                so payments go directly to your account.
+              </p>
+            </div>
+          </div>
+        )}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-
             {/* Section: Client details */}
             <div className="bg-white rounded-2xl border border-stone-200 p-5 space-y-4">
               <h2 className="text-sm font-semibold text-stone-900">
@@ -191,7 +242,10 @@ export function InvoiceBuilderForm({ userId, profile }: InvoiceBuilderFormProps)
                       <FormLabel className="text-xs font-medium text-stone-600">
                         Currency
                       </FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger className="rounded-xl border-stone-200 bg-stone-50 h-10 text-sm">
                             <SelectValue />
@@ -225,8 +279,8 @@ export function InvoiceBuilderForm({ userId, profile }: InvoiceBuilderFormProps)
                           {...field}
                           onChange={(e) => {
                             // Strip non-numeric except commas
-                            const raw = e.target.value.replace(/[^\d,]/g, "")
-                            field.onChange(raw)
+                            const raw = e.target.value.replace(/[^\d,]/g, "");
+                            field.onChange(raw);
                           }}
                         />
                       </FormControl>
@@ -254,10 +308,14 @@ export function InvoiceBuilderForm({ userId, profile }: InvoiceBuilderFormProps)
                     </FormControl>
                     <div className="flex justify-between">
                       <FormMessage className="text-xs" />
-                      <span className={cn(
-                        "text-[11px] ml-auto",
-                        (field.value?.length ?? 0) > 450 ? "text-amber-500" : "text-stone-300"
-                      )}>
+                      <span
+                        className={cn(
+                          "text-[11px] ml-auto",
+                          (field.value?.length ?? 0) > 450
+                            ? "text-amber-500"
+                            : "text-stone-300",
+                        )}
+                      >
                         {field.value?.length ?? 0}/500
                       </span>
                     </div>
@@ -295,7 +353,9 @@ export function InvoiceBuilderForm({ userId, profile }: InvoiceBuilderFormProps)
                   <FormItem>
                     <FormLabel className="text-xs font-medium text-stone-600">
                       Note to client{" "}
-                      <span className="text-stone-400 font-normal">(optional)</span>
+                      <span className="text-stone-400 font-normal">
+                        (optional)
+                      </span>
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -337,10 +397,26 @@ export function InvoiceBuilderForm({ userId, profile }: InvoiceBuilderFormProps)
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                     {(
                       [
-                        { name: "github", label: "GitHub", placeholder: "https://github.com/username" },
-                        { name: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/username" },
-                        { name: "behance", label: "Behance", placeholder: "https://behance.net/username" },
-                        { name: "portfolio", label: "Portfolio site", placeholder: "https://yoursite.com" },
+                        {
+                          name: "github",
+                          label: "GitHub",
+                          placeholder: "https://github.com/username",
+                        },
+                        {
+                          name: "linkedin",
+                          label: "LinkedIn",
+                          placeholder: "https://linkedin.com/in/username",
+                        },
+                        {
+                          name: "behance",
+                          label: "Behance",
+                          placeholder: "https://behance.net/username",
+                        },
+                        {
+                          name: "portfolio",
+                          label: "Portfolio site",
+                          placeholder: "https://yoursite.com",
+                        },
                       ] as const
                     ).map((link) => (
                       <FormField
@@ -410,5 +486,5 @@ export function InvoiceBuilderForm({ userId, profile }: InvoiceBuilderFormProps)
         <InvoicePreview values={watchedValues} profile={profile} />
       </div>
     </div>
-  )
+  );
 }
