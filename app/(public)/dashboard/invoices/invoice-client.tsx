@@ -229,7 +229,8 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
                     )}
                   </div>
 
-                  {/* Invoice info */}
+                 <div className="flex flex-col md:flex-row w-full">
+                     {/* Invoice info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <p className="text-sm font-semibold text-stone-900 truncate">
@@ -282,6 +283,7 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
                       <ExternalLink className="w-3.5 h-3.5 text-stone-400" />
                     </Link>
                   </div>
+                 </div>
                 </div>
 
                 {/* Overdue warning bar */}
